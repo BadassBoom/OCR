@@ -1,0 +1,624 @@
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Handwritten Code Recognition</title>
+        <link rel="icon" href="/Users/macbookpro13/Desktop/Diploma/Diplomas/images/keyboard_key_h.png" sizes="any">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            body {
+                background-color: #f8f8f8;
+                font-family: 'Helvetica', sans-serif;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+                text-align: center;
+            }
+
+            h1 {
+                color: #333;
+                margin-bottom: 30px;
+            }
+
+            #file-drop-area {
+                margin: 20px 0;
+                padding: 20px;
+                border: 2px dashed #aaa;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            #file-drop-area.highlight {
+                background-color: rgba(0, 0, 0, 0.1);
+            }
+
+            #image-section {
+                margin-top: 20px;
+                position: relative;
+            }
+
+            #image-preview {
+                max-width: 100%;
+                height: auto;
+                margin: 0 auto;
+                display: block;
+                background-color: rgba(255, 255, 255, 0.5);
+            }
+
+            #loading-bar {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0%;
+                height: 5px;
+                background-color: #4CAF50;
+                transition: width 0.3s;
+            }
+
+            #file-name {
+                margin-top: 10px;
+            }
+
+            #output {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #f2f2f2;
+                border-radius: 4px;
+                text-align: left;
+                white-space: pre-line;
+                word-break: break-all;
+                font-family: monospace;
+                line-height: 1.5;
+            }
+
+            #text-section,
+            #search-section {
+                display: none;
+                margin-top: 20px;
+            }
+
+            #text-section.active,
+            #search-section.active {
+                display: block;
+            }
+
+            #buttons {
+                margin-top: 20px;
+            }
+
+            #buttons button {
+                margin: 0 5px;
+            }
+
+            #process-button {
+                margin-top: 30px;
+                padding: 10px 20px;
+                background-color: #000;
+                color: #fff;
+                font-weight: bold;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            #process-button:disabled {
+                background-color: #aaa;
+                cursor: not-allowed;
+            }
+
+            #process-button:hover:not(:disabled) {
+                background-color: #333;
+            }
+
+            #reset-button {
+                margin-top: 10px;
+                padding: 10px 20px;
+                background-color: #aaa;
+                color: #fff;
+                font-weight: bold;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            #new-file-button {
+                margin-top: 10px;
+                padding: 10px 20px;
+                background-color: #aaa;
+                color: #fff;
+                font-weight: bold;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+
+            #reset-button:hover,
+            #new-file-button:hover {
+                background-color: #777;
+            }
+        </style>
+        <script src="https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    </head>
+    <body>
+
+        <div class="container">
+            <h1>Handwritten Code Recognition</h1>
+            <div id="file-drop-area">
+                <span>Drag and drop an image file here</span>
+            </div>
+            <div id="image-section">
+                <img src="" id="image-preview">
+                <div id="loading-bar"></div>
+                <div id="file-name"></div>
+            </div>
+            <div id="output"></div>
+            <div id="buttons">
+                <button onclick="switchSection('text-section')" class="btn btn-dark">Text</button>
+                <button onclick="switchSection('search-section')" class="btn btn-dark">Search</button>
+                <button onclick="reset()" id="reset-button" class="btn btn-danger">Reset</button>
+                <button onclick="createFile()" id="new-file-button" class="btn btn-primary">New File</button>
+            </div>
+            <div id="text-section">
+                <p>Program Speed: <span id="program-speed">Calculating...</span></p>
+                <p>Programming Language: <span id="programming-language">Detecting...</span></p>
+            </div>
+            <div id="search-section">
+                <p>Labels:</p>
+                <div id="labels-output">Searching...</div>
+            </div>
+            <button onclick="processImage()" id="process-button" disabled>Process Image</button>
+        </div>
+        <div id="graphs-section" class="container">
+            <h2>Performance Graphs</h2>
+            <div id="speed-accuracy-graph"></div>
+            <div id="all-images-graph"></div>
+        </div>
+        <div class="container">
+            <h2>Program Description</h2>
+            <p>
+                This program allows you to recognize handwritten code from an image. Simply drag and drop an image file onto the designated area, and the program will process the image using optical character recognition (OCR) to extract the code. The extracted code will be displayed, along with additional information such as predicted labels and programming language.
+            </p>
+            <h2>Usage</h2>
+            <ol style="text-align:left">
+            <li>Open the HTML file in a web browser.</li>
+            <li>Drag and drop an image file containing handwritten code onto the designated area.</li>
+            <li>The program will process the image using OCR and display the extracted code, predicted labels, and programming language.</li>
+            <li>Additional features such as text search and performance graphs are also available.</li>
+            </ol>
+            <h2>Acknowledgements</h2>
+            <ul style="text-align:left">
+            <li><a style="text-decoration: underline;color:black" href="https://tesseract-ocr.github.io/">Tesseract</a> - OCR library</li>
+            <li><a style="text-decoration: underline;color:black" href="https://github.com/plotly/plotly.py">Plotly</a> - Graphing library</li>
+            </ul>
+            <h2>Contact</h2>
+            <p>
+                For any inquiries, please contact <a href="https://badassboom.github.io/">BadassBoom</a>.
+            </p>
+        </div>
+        <footer class="container">
+            <hr>
+            <p class="text-center">
+                <small>This program is licensed under the MIT License.</small>
+            </p>
+        </footer>
+        <script>
+            const speedAccuracyGraphElement = document.getElementById('speed-accuracy-graph');
+            const allImagesGraphElement = document.getElementById('all-images-graph');
+
+            let allImagesData = [];
+            let fileInput = null;
+            const fileDropArea = document.getElementById('file-drop-area');
+            const imageSection = document.getElementById('image-section');
+            const imagePreviewElement = document.getElementById('image-preview');
+            const loadingBar = document.getElementById('loading-bar');
+            const fileNameElement = document.getElementById('file-name');
+            const outputElement = document.getElementById('output');
+            const textSection = document.getElementById('text-section');
+            const searchSection = document.getElementById('search-section');
+            const programSpeedElement = document.getElementById('program-speed');
+            const programmingLanguageElement = document.getElementById('programming-language');
+            const labelsOutput = document.getElementById('labels-output');
+            const processButton = document.getElementById('process-button');
+            const resetButton = document.getElementById('reset-button');
+            const newFileButton = document.getElementById('new-file-button');
+
+            fileDropArea.addEventListener('dragover', handleDragOver, false);
+            fileDropArea.addEventListener('dragleave', handleDragLeave, false);
+            fileDropArea.addEventListener('drop', handleFileDrop, false);
+
+            function handleDragOver(event) {
+                event.preventDefault();
+                fileDropArea.classList.add('highlight');
+            }
+
+            function handleDragLeave(event) {
+                event.preventDefault();
+                fileDropArea.classList.remove('highlight');
+            }
+
+            function handleFileDrop(event) {
+                event.preventDefault();
+                fileDropArea.classList.remove('highlight');
+
+                const file = event.dataTransfer.files[0];
+                displayImage(file);
+                processButton.disabled = false;
+            }
+
+            function handleFileChange(event) {
+            const file = event.target.files[0];
+            displayImage(file);
+            processButton.disabled = false;
+        }
+
+            function displayImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const image = new Image();
+                image.onload = function() {
+                    imagePreviewElement.src = event.target.result;
+                    loadingBar.style.width = '0%';
+                    fileNameElement.textContent = file.name;
+                };
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+            function processImage() {
+            processButton.disabled = true;
+            const image = imagePreviewElement;
+
+            const startTime = performance.now();
+
+            Tesseract.recognize(image)
+                .progress(function (message) {
+                    if (message.status === 'recognizing text') {
+                        loadingBar.style.width = message.progress * 100 + '%';
+                    }
+                })
+                .then((result) => {
+                    const endTime = performance.now();
+                    const programSpeed = endTime - startTime;
+                    programSpeedElement.textContent = `${programSpeed.toFixed(2)} ms`;
+
+                    const extractedText = result.text.trim();
+                    outputElement.innerText = extractedText;
+                    loadingBar.style.width = '100%';
+
+                    const labels = predictLabels(extractedText);
+                    displayLabels(labels);
+
+                    const language = predictProgrammingLanguage(extractedText);
+                    displayProgrammingLanguage(language);
+
+                    const imageData = {
+                        speed: programSpeed,
+                        accuracy: calculateAccuracy(extractedText) // Modify this line to calculate accuracy based on extracted text
+                    };
+                    allImagesData.push(imageData);
+
+                    updateSpeedAccuracyGraph();
+                    updateAllImagesGraph();
+
+                    resetImageInput(); // Reset the file input
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    outputElement.innerText = 'Error occurred during recognition.';
+                    loadingBar.style.width = '0%';
+                    resetImageInput(); // Reset the file input
+                });
+
+            displayOCRImage(image);
+        }
+
+    function calculateAccuracy(extractedText, expectedText) {
+                // Placeholder function to calculate accuracy based on the extracted text and expected text
+                // Replace this with your actual accuracy calculation logic
+                return Math.random(); // Random value between 0 and 1 as a placeholder
+            }
+
+            function updateSpeedAccuracyGraph() {
+                const speedData = allImagesData.map((imageData, index) => {
+                    return { x: index + 1, y: imageData.speed };
+                });
+
+                const accuracyData = allImagesData.map((imageData, index) => {
+                    return { x: index + 1, y: imageData.accuracy };
+                });
+
+                const data = [
+                    {
+                        x: speedData.map(dataPoint => dataPoint.x),
+                        y: speedData.map(dataPoint => dataPoint.y),
+                        type: 'scatter',
+                        name: 'Speed (ms)',
+                        marker: { color: 'blue' }
+                    },
+                    {
+                        x: accuracyData.map(dataPoint => dataPoint.x),
+                        y: accuracyData.map(dataPoint => dataPoint.y),
+                        type: 'scatter',
+                        name: 'Accuracy',
+                        marker: { color: 'green' }
+                    }
+                ];
+
+                const layout = {
+                    title: 'Speed and Accuracy',
+                    xaxis: { title: 'Image' },
+                    yaxis: { title: 'Speed (ms) / Accuracy' }
+                };
+
+                Plotly.newPlot(speedAccuracyGraphElement, data, layout);
+            }
+
+
+            function predictLabels(extractedText) {
+    console.log('Predicting labels:', extractedText);
+
+    const labels = [];
+
+    // Define the keywords for functions, loops, and variables
+    const functionKeywords = ['def', 'function', 'procedure', 'method', 'subroutine'];
+    const loopKeywords = ['for', 'while', 'do', 'repeat', 'until', 'foreach'];
+    const variableKeywords =  ['var', 'let', 'const', 'val', 'mutable', 'static', 'global'];
+    const conditionKeywords = ['if', 'else', 'elif', 'switch', 'case', 'default', 'when'];
+    const exceptionKeywords = ['try', 'catch', 'throw', 'finally', 'raise', 'except'];
+    const classKeywords = ['class', 'struct', 'interface', 'object', 'type', 'trait'];
+    const integerKeywords = ['int', 'integer', 'number', 'num', 'long', 'short', 'byte'];
+    const arrayKeywords = ['array', 'list', 'vector', 'arraylist', 'arrayof', 'tuple'];
+    const fileKeywords= ['open', 'close', 'read', 'write', 'file'];
+    const algorithmKeywords = ['sort', 'search', 'find', 'binary', 'linear', 'recursive'];
+    const error_handlingKeywords = ['try', 'catch', 'finally', 'throw', 'error', 'exception'];
+    const moduleKeywords = ['import', 'require', 'include', 'use', 'module', 'library'];
+
+    // Check for the presence of keywords and assign confidence scores
+    if (containsKeywords(extractedText, functionKeywords)) {
+        labels.push({ name: 'Function', confidence: 0.8 });
+    }
+    if (containsKeywords(extractedText, fileKeywords)) {
+        labels.push({ name: 'File', confidence: 0.2 });
+    }
+    if (containsKeywords(extractedText, moduleKeywords)) {
+        labels.push({ name: 'Module', confidence: 0.2 });
+    }
+    if (containsKeywords(extractedText, error_handlingKeywords)) {
+        labels.push({ name: 'Error Handling', confidence: 0.2 });
+    }
+    if (containsKeywords(extractedText, loopKeywords)) {
+        labels.push({ name: 'Loop', confidence: 0.6 });
+    }
+
+    if (containsKeywords(extractedText, variableKeywords)) {
+        labels.push({ name: 'Variable', confidence: 0.7 });
+    }
+    if (containsKeywords(extractedText, conditionKeywords)) {
+        labels.push({ name: 'Condition', confidence: 0.5 });
+    }
+    if (containsKeywords(extractedText, exceptionKeywords)) {
+        labels.push({ name: 'Exception', confidence: 0.5 });
+    }
+    if (containsKeywords(extractedText, classKeywords)) {
+        labels.push({ name: 'Class', confidence: 0.5 });
+    }
+    if (containsKeywords(extractedText, integerKeywords)) {
+        labels.push({ name: 'Integer', confidence: 0.2 });
+    }
+    if (containsKeywords(extractedText, arrayKeywords)) {
+        labels.push({ name: 'Array', confidence: 0.2 });
+    }
+    if (containsKeywords(extractedText, algorithmKeywords)) {
+        labels.push({ name: 'Algorithm', confidence: 0.4 });
+    }
+    return labels;
+}
+function containsKeywords(text, keywords) {
+    // Check if any of the keywords are present in the text
+    for (const keyword of keywords) {
+        if (text.includes(keyword)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+function displayLabels(labels) {
+    let outputHTML = '<p>Labels:</p>';
+
+    // Sort the labels based on confidence scores in descending order
+    labels.sort((a, b) => b.confidence - a.confidence);
+
+    // Display the top 5 labels or all labels if there are fewer than 5
+    const topLabels = labels.slice(0, 5);
+
+    topLabels.forEach(label => {
+        const percent = label.confidence * 100;
+        const progressBarHTML = `<div class="progress">
+            <div class="progress-bar bg-success" role="progressbar" style="width: ${percent}%" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>`;
+        outputHTML += `<div>${label.name}: ${percent.toFixed(2)}% ${progressBarHTML}</div>`;
+    });
+
+    labelsOutput.innerHTML = outputHTML;
+}
+
+    function updateButtonStatus() {
+        const imageProcessed = imagePreviewElement.src !== '';
+        processButton.disabled = !imageProcessed;
+    }
+
+    function predictProgrammingLanguage(extractedText) {
+        // Define the keywords for each programming language
+        const languageKeywords = {
+'Python': ['and', 'as', 'assert', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda'],
+'JavaScript': ['break', 'case', 'catch', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'else', 'export', 'extends', 'finally', 'for', 'function', 'if', 'import', 'in', 'instanceof'],
+'Java': ['abstract', 'system','println','assert', 'boolean', 'println', 'system', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'default', 'do', 'double', 'else', 'enum', 'extends', 'final', 'finally', 'float', 'public', 'static', 'private', 'protected'],
+'C': ['auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do', 'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'int', 'long', 'register', 'return'],
+'C++': ['auto', 'break', 'case', 'catch', 'char', 'class', 'const', 'continue', 'default', 'delete', 'do', 'double', 'else', 'enum', 'explicit', 'export', 'extern', 'float', 'for', 'friend', 'include', 'iostream'],
+'Ruby': ['alias', 'and', 'begin', 'break', 'case', 'class', 'def', 'defined?', 'do', 'else', 'elsif', 'end', 'ensure', 'false', 'for', 'if', 'in', 'module', 'next', 'nil'],
+'Go': ['break', 'case', 'chan', 'const', 'continue', 'default', 'defer', 'else', 'fallthrough', 'for', 'func', 'go', 'goto', 'if', 'import', 'interface', 'map', 'package', 'range', 'return'],
+'Rust': ['as', 'break', 'const', 'continue', 'crate', 'else', 'enum', 'extern', 'false', 'fn', 'for', 'if', 'impl', 'in', 'let', 'loop', 'match', 'mod', 'move', 'mut'],
+'Swift': ['as', 'associativity', 'break', 'case', 'class', 'continue', 'default', 'defer', 'deinit', 'didSet', 'do', 'dynamicType', 'else', 'enum', 'extension', 'fallthrough', 'for', 'func', 'get', 'guard'],
+'PHP': ['abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch', 'class', 'clone', 'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else', 'elseif', 'empty']
+};
+
+
+
+
+
+
+        // Calculate the occurrence count of each programming language's keywords in the extracted text
+        const languageScores = {};
+        for (const language in languageKeywords) {
+            const keywords = languageKeywords[language];
+            let score = 0;
+            for (const keyword of keywords) {
+                if (extractedText.includes(keyword)) {
+                    score++;
+                }
+            }
+            languageScores[language] = score;
+        }
+
+        // Find the programming language with the highest score
+        let predictedLanguage = null;
+        let maxScore = -1;
+        for (const language in languageScores) {
+            const score = languageScores[language];
+            if (score > maxScore) {
+                maxScore = score;
+                predictedLanguage = language;
+            }
+        }
+
+        // Calculate the confidence as the ratio of the highest score to the total keywords count
+        const totalKeywordsCount = Object.values(languageKeywords).reduce((count, keywords) => count + keywords.length, 0);
+        const confidence = maxScore / totalKeywordsCount;
+
+        return { name: predictedLanguage, confidence };
+    }
+
+
+    function displayProgrammingLanguage(language) {
+        const percent = 100 - language.confidence * 100;
+        const progressBarHTML = `<div class="progress">
+            <div class="progress-bar bg-info" role="progressbar" style="width: ${percent}%" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>`;
+        programmingLanguageElement.innerHTML = `${language.name}: ${percent.toFixed(2)}% ${progressBarHTML}`;
+    }
+
+    function displayOCRImage(image) {
+        // Placeholder function to display OCR image with boundary boxes
+        console.log('Display OCR Image:', image);
+        
+        // Modify this function to display the OCR image with boundary boxes as desired
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        context.drawImage(image, 0, 0);
+        
+        // Draw boundary boxes
+        context.lineWidth = 2;
+        context.strokeStyle = 'red';
+        // Assuming you have an array of bounding boxes called 'boundingBoxes'
+        boundingBoxes.forEach(box => {
+            context.rect(box.left, box.top, box.width, box.height);
+            context.stroke();
+        });
+
+        // Append the canvas to the image section
+        imageSection.appendChild(canvas);
+    }
+
+
+    function switchSection(sectionId) {
+        textSection.classList.remove('active');
+        searchSection.classList.remove('active');
+
+        const section = document.getElementById(sectionId);
+        section.classList.add('active');
+
+        if (sectionId === 'text-section') {
+            displayOCRImage(imagePreviewElement);
+        }
+    }
+            
+    function reset() {
+            imagePreviewElement.src = "";
+            loadingBar.style.width = '0%';
+            fileNameElement.textContent = "";
+            outputElement.innerText = "";
+            labelsOutput.innerHTML = "Searching...";
+            programSpeedElement.textContent = "Calculating...";
+            programmingLanguageElement.innerHTML = "Detecting...";
+            processButton.disabled = true;
+            allImagesData = [];
+            updateSpeedAccuracyGraph();
+            updateAllImagesGraph();
+            switchSection("");
+        }
+        function resetImageInput() {
+            if (fileInput) {
+                fileInput.value = ''; // Reset the file input element
+            }
+        }
+
+
+            function resetOCRImage() {
+                // Placeholder function to reset the OCR image display
+                console.log('Reset OCR Image');
+                // Add code here to reset the OCR image display as desired
+            }
+
+            function createFile() {
+                const extractedText = outputElement.innerText;
+                const blob = new Blob([extractedText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'extracted_text.txt';
+                link.click();
+            }
+            function updateAllImagesGraph() {
+                const imageData = allImagesData.map((imageData, index) => {
+                    return { x: index + 1, y: imageData.accuracy };
+                });
+
+                const data = [
+                    {
+                        x: imageData.map(dataPoint => dataPoint.x),
+                        y: imageData.map(dataPoint => dataPoint.y),
+                        type: 'scatter',
+                        mode: 'markers',
+                        name: 'Accuracy',
+                        marker: { color: 'orange' }
+                    }
+                ];
+
+                const layout = {
+                    title: 'Accuracy of Processed Images',
+                    xaxis: { title: 'Image' },
+                    yaxis: { title: 'Accuracy' }
+                };
+
+                Plotly.newPlot(allImagesGraphElement, data, layout);
+            }
+            document.getElementById('reset-button').addEventListener('click', function() {
+                processButton.disabled = false;
+            });
+        </script>
+    </body>
+    </html>
